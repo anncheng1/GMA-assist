@@ -40,7 +40,8 @@
     <div class="panel">
       <div class="panel-head">
         <h2>1 · Video</h2>
-        <label class="btn primary">Open video file<input type="file" id="videoInput" accept="video/*" hidden></label>
+        <div class="row" style="margin:0"><select id="sampleCase" title="Built-in de-identified teaching cases"></select>
+        <label class="btn primary">Open video file<input type="file" id="videoInput" accept="video/*" hidden></label></div>
       </div>
       <p class="hint" id="videoHint">Video stays on this device — nothing is uploaded. Sound is muted by default because the manual recommends assessing without acoustic signals.</p>
       <div class="video-wrap" id="videoWrap">
@@ -69,6 +70,7 @@
         <button id="btnMarkIn" title="[ key">[ Mark GM start</button>
         <button id="btnMarkOut" title="] key">Mark GM end ]</button>
         <button id="btnRoi" title="Drag a box around the infant">Set region (ROI)</button>
+        <button id="btnRoiAuto" title="Find the infant from where movement occurs">Auto region</button>
         <button id="btnRoiClear">Clear ROI</button>
         <label>Head at
           <select id="headPos">

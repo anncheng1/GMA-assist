@@ -152,6 +152,9 @@ const Quiz = (() => {
   async function load() {
     try { clips = await ClipDB.all(); } catch (e) { clips = []; }
     clips.sort((a, b) => a.added.localeCompare(b.added));
+    const builtIn = GMA.sampleCases.map(c => ({ id: c.id, builtin: true, url: c.file, title: `${c.code} — ${c.pma} wk PMA${c.pma >= 40 ? ' (' + (c.pma - 40) + ' wk post-term)' : ''}`,
+      period: c.period, key: c.key, keyLabel: c.label, teach: c.teach || '', keyScore: null }));
+    clips = [...builtIn, ...clips];
     renderList(); renderStats();
   }
   function renderList() {
@@ -162,8 +165,8 @@ const Quiz = (() => {
     ul.innerHTML = clips.map(c => {
       const tries = res.filter(r => r.clipId === c.id);
       return `<li data-id="${c.id}" class="${active && active.id === c.id ? 'active' : ''}"><div class="meta"><b>${esc(c.title)}</b>
-        <small>${PERIOD_LABEL[c.period]} · ${c.yt ? 'YouTube · ' : c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
-        ${trainer ? '<button data-a="del" class="danger">✕</button>' : ''}</li>`;
+        <small>${PERIOD_LABEL[c.period]} · ${c.builtin ? 'built-in case · ' : c.yt ? 'YouTube · ' : c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
+        ${trainer && !c.builtin ? '<button data-a="del" class="danger">✕</button>' : ''}</li>`;
     }).join('');
     $$('li[data-id]', ul).forEach(li => li.onclick = async ev => {
       const c = clips.find(x => x.id === li.dataset.id);
@@ -180,7 +183,8 @@ const Quiz = (() => {
     if (c.yt) { pv.removeAttribute('src'); pv.hidden = true; yf.hidden = false; yf.src = GMA.ytEmbed(c.yt); }
     else {
       yf.hidden = true; yf.removeAttribute('src'); pv.hidden = false;
-      if (c.blob) { url = URL.createObjectURL(c.blob); pv.src = url; } else { pv.removeAttribute('src'); toast('Video not attached for this clip'); }
+      if (c.url) { fetch(c.url).then(r => r.blob()).then(b => { if (active !== c) return; url = URL.createObjectURL(b); pv.src = url; }).catch(() => { pv.src = c.url; }); }
+      else if (c.blob) { url = URL.createObjectURL(c.blob); pv.src = url; } else { pv.removeAttribute('src'); toast('Video not attached for this clip'); }
     }
     $('#pYtHint').hidden = !c.yt; ['pBack', 'pFwd', 'pSpeed'].forEach(id => $('#' + id).disabled = !!c.yt);
     pv.playbackRate = +$('#pSpeed').value;
@@ -201,15 +205,17 @@ const Quiz = (() => {
     const trainee = $('#traineeName').value.trim() || 'anonymous';
     Store.set('traineeName', trainee);
     const sc = e.target.score.value ? +e.target.score.value : null;
-    const ok = ans === active.key;
+    const binary = active.key === 'NORMAL' || active.key === 'ABNORMAL';
+    const ok = binary ? (GMA.abnormal.has(ans) === (active.key === 'ABNORMAL')) : ans === active.key;
     const res = Store.get('results', []);
     res.push({ id: uid(), clipId: active.id, clipTitle: active.title, period: active.period, trainee, answer: ans, key: active.key, correct: ok,
       score: sc, keyScore: active.keyScore, date: new Date().toISOString() });
     Store.set('results', res);
     const normAns = GMA.abnormal.has(ans) ? 'abnormal' : 'normal', normKey = GMA.abnormal.has(active.key) ? 'abnormal' : 'normal';
     $('#practiceFeedback').innerHTML = `<div class="feedback ${ok ? 'ok' : 'no'}">
-      <b>${ok ? 'Agrees with reference.' : 'Differs from reference.'}</b> You: ${esc(GMA.classes[ans].label)} · Reference: <b>${esc(GMA.classes[active.key].label)}</b>
-      ${!ok && normAns === normKey ? '<br>You correctly judged it ' + normKey + ', but the sub-category differs.' : ''}
+      <b>${ok ? 'Agrees with reference.' : 'Differs from reference.'}</b> You: ${esc(GMA.classes[ans].label)} · Reference: <b>${esc(active.keyLabel || GMA.classes[active.key].label)}</b>
+      ${binary ? '<br><span class="hint">This case’s reference states only normal vs abnormal, so it is graded at that level. Discuss the sub-category with your trainer.</span>' : ''}
+      ${!binary && !ok && normAns === normKey ? '<br>You correctly judged it ' + normKey + ', but the sub-category differs.' : ''}
       ${!ok && normAns !== normKey ? '<br><b>Normal/abnormal judgement differs</b> — revisit the defining features in the Learn tab.' : ''}
       ${active.keyScore && sc ? `<br>Score: you ${sc} · reference ${active.keyScore} (difference ${Math.abs(sc - active.keyScore)})` : ''}
       ${active.teach ? `<br><br><b>Teaching points:</b> ${esc(active.teach)}` : ''}</div>`;
@@ -230,15 +236,17 @@ const Quiz = (() => {
     const el = $('#practiceStats');
     if (!res.length) { el.innerHTML = '<p class="hint full">No attempts yet' + (name ? ' for ' + esc(name) : '') + '.</p>'; return; }
     const acc = res.filter(r => r.correct).length / res.length * 100;
+    const isBin = k => k === 'NORMAL' || k === 'ABNORMAL';
+    const pairs = res.map(r => isBin(r.key) ? [GMA.abnormal.has(r.answer) ? 'ABNORMAL' : 'NORMAL', r.key] : [r.answer, r.key]);
     const nAbn = res.filter(r => GMA.abnormal.has(r.answer) === GMA.abnormal.has(r.key)).length / res.length * 100;
-    const k = kappa(res.map(r => [r.answer, r.key]));
+    const k = kappa(pairs);
     // sensitivity for abnormal (vs reference)
     const abnKeys = res.filter(r => GMA.abnormal.has(r.key)), nrmKeys = res.filter(r => !GMA.abnormal.has(r.key));
     const sens = abnKeys.length ? abnKeys.filter(r => GMA.abnormal.has(r.answer)).length / abnKeys.length * 100 : null;
     const spec = nrmKeys.length ? nrmKeys.filter(r => !GMA.abnormal.has(r.answer)).length / nrmKeys.length * 100 : null;
-    const cats = [...new Set(res.flatMap(r => [r.answer, r.key]))];
+    const cats = [...new Set(pairs.flat())];
     const conf = `<table class="conf"><tr><th>ref ↓ / you →</th>${cats.map(c => `<th>${esc(GMA.classes[c].short === 'N' && c === 'FN' ? 'F+' : GMA.classes[c].short)}</th>`).join('')}</tr>` +
-      cats.map(a => `<tr><th>${esc(c2(a))}</th>${cats.map(b => `<td class="${a === b ? 'diag' : ''}">${res.filter(r => r.key === a && r.answer === b).length || ''}</td>`).join('')}</tr>`).join('') + '</table>';
+      cats.map(a => `<tr><th>${esc(c2(a))}</th>${cats.map(b => `<td class="${a === b ? 'diag' : ''}">${pairs.filter(p => p[1] === a && p[0] === b).length || ''}</td>`).join('')}</tr>`).join('') + '</table>';
     function c2(c) { return c === 'FN' ? 'F+' : GMA.classes[c].short; }
     const card = (l, v, n) => `<div class="metric"><small>${l}</small><b>${v}</b><small>${n || ''}</small></div>`;
     el.innerHTML = card('Attempts', res.length, name ? esc(name) : 'all trainees') +

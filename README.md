@@ -55,6 +55,17 @@ Published material is embedded or linked; it isn't downloaded, so viewing it nee
 A randomised bank of 25 multiple-choice questions, each with an explanation. The app keeps your best score.
 
 ### 5. Practice clips (training healthcare workers)
+- **Five built-in teaching cases** (`cases/`, de-identified with faces blurred, about 60 s each). They appear as Case A–E with only the age shown, so trainees score them blind:
+
+  | Case | Age (PMA) | Period | Reference |
+  |---|---|---|---|
+  | A | 40 wk | writhing | abnormal |
+  | B | 44 wk | writhing | normal |
+  | C | 45 wk | writhing | mild abnormalities |
+  | D | 53 wk (13 wk post-term) | fidgety | abnormal |
+  | E | 57 wk (17 wk post-term) | fidgety | normal |
+
+  The reference gives only normal vs abnormal, so these cases are graded at that level. The same cases can be loaded in **Analyse video → Load a teaching case** for motion analysis and scoring practice.
 - **Trainer mode:** add de-identified teaching clips (a local video file **or a YouTube link**) with a reference (expert) classification, an optional reference score and teaching points.
 - **Trainee mode:** score each clip blind, then see the reference answer and the teaching points.
 - Per-trainee statistics: exact agreement, normal-vs-abnormal agreement, **Cohen's κ**, sensitivity and specificity against the reference, and a confusion matrix. Results export to CSV.

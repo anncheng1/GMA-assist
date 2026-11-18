@@ -201,5 +201,35 @@ const Motion = (() => {
     return m + ':' + (s < 10 ? '0' : '') + s.toFixed(dp);
   }
 
-  return { analyse, metrics, draw, LIMBS, COLORS, fmtT };
+  /* Estimate the infant's region from where image change accumulates across the clip. */
+  async function autoRoi(video, nSamples = 40) {
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    const acc = new Float32Array(W * H); let prev = null;
+    const oldT = video.currentTime, wasPaused = video.paused; video.pause();
+    const dur = video.duration, step = dur / (nSamples + 1);
+    for (let i = 1; i <= nSamples; i++) {
+      for (const dt of [0, 0.25]) { // pairs of frames 0.25 s apart
+        await seek(video, Math.min(dur - 0.05, i * step + dt));
+        ctx.drawImage(video, 0, 0, W, H);
+        const d = ctx.getImageData(0, 0, W, H).data, g = new Uint8ClampedArray(W * H);
+        for (let p = 0, q = 0; p < d.length; p += 4, q++) g[q] = (d[p] * 77 + d[p + 1] * 150 + d[p + 2] * 29) >> 8;
+        if (dt > 0 && prev) for (let k = 0; k < g.length; k++) if (Math.abs(g[k] - prev[k]) > 15) acc[k]++;
+        prev = g;
+      }
+    }
+    await seek(video, oldT); if (!wasPaused) video.play();
+    const xs = [], ys = [];
+    const thr = Math.max(2, nSamples * 0.05);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (acc[y * W + x] >= thr) { xs.push(x); ys.push(y); }
+    if (xs.length < 30) return null;
+    xs.sort((a, b) => a - b); ys.sort((a, b) => a - b);
+    const q = (a, f) => a[Math.floor(f * (a.length - 1))];
+    let x0 = q(xs, 0.03), x1 = q(xs, 0.97), y0 = q(ys, 0.03), y1 = q(ys, 0.97);
+    const px = (x1 - x0) * 0.12 + 3, py = (y1 - y0) * 0.12 + 3;
+    x0 = Math.max(0, x0 - px); x1 = Math.min(W, x1 + px); y0 = Math.max(0, y0 - py); y1 = Math.min(H, y1 + py);
+    return { x: x0 / W, y: y0 / H, w: (x1 - x0) / W, h: (y1 - y0) / H };
+  }
+
+  return { analyse, metrics, draw, autoRoi, LIMBS, COLORS, fmtT };
 })();

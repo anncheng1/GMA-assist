@@ -6,7 +6,7 @@
  */
 const GMA = {};
 
-GMA.version = '1.2.1';
+GMA.version = '1.3.0';
 
 /* Built-in reference videos (embedded from the publisher's YouTube channel; not downloaded). */
 GMA.referenceVideos = [
@@ -59,6 +59,20 @@ GMA.reading = [
   { title: 'Parent fact sheet: Prechtl’s General Movements Assessment', cite: 'Cerebral Palsy Alliance, Australia', url: 'https://cerebralpalsy.org.au/wp-content/uploads/2023/06/Parental-Fact-Sheets.pdf' }
 ];
 
+/* Built-in teaching cases (de-identified, faces blurred). Ages are post-menstrual age in weeks.
+ * The reference states only normal / abnormal, so practice is graded at that level. */
+GMA.sampleCases = [
+  { id: 'case-a', code: 'Case A', file: 'cases/gma-abnormal-at-40-weeks.mp4', pma: 40, period: 'writhing', key: 'ABNORMAL', label: 'Abnormal GMs at 40 weeks' },
+  { id: 'case-b', code: 'Case B', file: 'cases/gma-normal-at-44-weeks.mp4', pma: 44, period: 'writhing', key: 'NORMAL', label: 'Normal GMs at 44 weeks' },
+  { id: 'case-c', code: 'Case C', file: 'cases/gma-mild-abnormalities-at-45-weeks.mp4', pma: 45, period: 'writhing', key: 'ABNORMAL', label: 'Mild abnormalities at 45 weeks',
+    teach: 'Labelled “mild abnormalities”: look for reduced complexity/variability rather than gross rigidity. Discuss which sub-category (e.g. poor repertoire) best fits.' },
+  { id: 'case-d', code: 'Case D', file: 'cases/gma-abnormal-at-53-weeks.mp4', pma: 53, period: 'fidgety', key: 'ABNORMAL', label: 'Abnormal GMs at 53 weeks (13 wk post-term)',
+    teach: 'Fidgety period: decide whether fidgety movements are absent or abnormal in quality, and score the MOS.' },
+  { id: 'case-e', code: 'Case E', file: 'cases/gma-normal-at-57-weeks.mp4', pma: 57, period: 'fidgety', key: 'NORMAL', label: 'Normal GMs at 57 weeks (17 wk post-term)',
+    teach: 'Fidgety period: note the fidgety movements and the co-existing age-adequate repertoire.' }
+];
+GMA.sampleCases.forEach(c => { c.thumb = c.file.replace('.mp4', '.jpg'); });
+
 GMA.ytId = function (url) {
   if (!url) return null;
   const s = String(url).trim();
@@ -77,10 +91,12 @@ GMA.classes = {
   H:   { label: 'Hypokinesis (H)', short: 'H', period: ['preterm','writhing'], desc: 'No GMs observed during the recording.' },
   FN:  { label: 'Normal fidgety movements (F+)', short: 'N', period: ['fidgety'], desc: 'Small, moderate-speed, variable-acceleration movements of neck, trunk and limbs in all directions.' },
   AF:  { label: 'Abnormal fidgety (AF)', short: 'AF', period: ['fidgety'], desc: 'Like fidgety movements but amplitude, speed and jerkiness moderately/greatly exaggerated. Rare.' },
+  NORMAL:   { label: 'Normal (sub-type not specified)', short: 'Nrm', period: [], desc: 'Reference states only that movements are normal.' },
+  ABNORMAL: { label: 'Abnormal (sub-type not specified)', short: 'Abn', period: [], desc: 'Reference states only that movements are abnormal.' },
   'F-':{ label: 'Absent fidgety (F−)', short: 'F-', period: ['fidgety'], desc: 'Fidgety movements never observed from 9 to 20 weeks post-term; other movements may be present.' }
 };
 GMA.trajectoryRows = ['F-','AF','CS','Ch','PR','H','N']; // top → bottom, as in Fig. 3.7
-GMA.abnormal = new Set(['PR','CS','Ch','H','AF','F-']);
+GMA.abnormal = new Set(['PR','CS','Ch','H','AF','F-','ABNORMAL']);
 
 /* ---------- Age periods ---------- */
 GMA.periodFor = function (pmaWeeks) {

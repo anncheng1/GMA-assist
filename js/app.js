@@ -27,9 +27,26 @@ $('#appVersion').textContent = GMA.version;
 const video = $('#video');
 const state = { roi: null, seqs: [], activeSeq: null, loop: false, analysis: null, metrics: null, fileName: '', frameDt: 1 / 30, show: { total: true, RA: false, LA: false, RL: false, LL: false } };
 
+function resetVideoState(name) {
+  state.fileName = name; state.seqs = []; state.analysis = null; state.metrics = null; state.roi = null;
+  $('#videoEmpty').hidden = true; renderSeqs(); renderMetrics(); drawRoi();
+}
+$('#sampleCase').innerHTML = '<option value="">Load a teaching case…</option>' + GMA.sampleCases.map(c => `<option value="${c.id}">${esc(c.code)} — ${c.pma} wk PMA</option>`).join('');
+$('#sampleCase').onchange = e => {
+  const c = GMA.sampleCases.find(x => x.id === e.target.value); if (!c) return;
+  toast('Loading ' + c.code + '…');
+  fetch(c.file).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }).then(b => {
+    if (video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
+    video.src = URL.createObjectURL(b); // blob URL: frame-accurate seeking on any host, offline after first load
+    resetVideoState(c.code + ' (teaching case, ' + c.pma + ' wk PMA)');
+    $('#headPos').value = c.head || 'top';
+    video.addEventListener('loadeddata', () => autoRegion(true).then(() => toast(c.code + ' loaded with auto region — reference answer is in Practice clips')), { once: true });
+  }).catch(err => toast('Could not load case (' + err.message + ') — check internet connection'));
+  e.target.value = '';
+};
 $('#videoInput').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
-  if (video.src) URL.revokeObjectURL(video.src);
+  if (video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
   video.src = URL.createObjectURL(f);
   state.fileName = f.name; state.seqs = []; state.analysis = null; state.metrics = null; state.roi = null;
   $('#videoEmpty').hidden = true;
@@ -167,6 +184,16 @@ $('#btnRoi').onclick = () => {
   video.pause(); sizeRoiCanvas(); roiCanvas.classList.add('drawing'); toast('Drag a box around the infant');
 };
 $('#btnRoiClear').onclick = () => { state.roi = null; drawRoi(); };
+async function autoRegion(quiet) {
+  if (!video.videoWidth) return toast('Load a video first');
+  const b = $('#btnRoiAuto'); b.disabled = true; b.textContent = 'Finding infant…';
+  try {
+    const r = await Motion.autoRoi(video);
+    if (r) { state.roi = r; sizeRoiCanvas(); if (!quiet) toast('Region set — adjust with “Set region” if needed'); }
+    else toast('Not enough movement to locate the infant — draw the region manually');
+  } finally { b.disabled = false; b.textContent = 'Auto region'; }
+}
+$('#btnRoiAuto').onclick = () => autoRegion(false);
 function relPos(e) {
   const b = roiCanvas.getBoundingClientRect(), vr = videoRect();
   const p = e.touches ? e.touches[0] : e;
@@ -344,7 +371,7 @@ form.addEventListener('change', e => {
 // global classification buttons
 function renderGlobal(periodKey) {
   const p = periodKey === 'transition' ? null : periodKey === 'late' ? 'fidgety' : periodKey;
-  const keys = Object.keys(GMA.classes);
+  const keys = Object.keys(GMA.classes).filter(k => GMA.classes[k].period.length);
   const sel = form.querySelector('input[name="globalClass"]:checked')?.value;
   $('#globalClass').innerHTML = keys.map(k => {
     const c = GMA.classes[k]; const fits = !p || c.period.includes(p);
