@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GMA Assist — Prechtl General Movement Assessment</title>
+<meta name="description" content="Offline video review, scoring and training tool for Prechtl's General Movement Assessment">
+<meta name="theme-color" content="#0f5c6e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="icons/icon.svg" alt="" width="32" height="32">
+    <div>
+      <strong>GMA Assist</strong>
+      <span class="sub">Prechtl General Movement Assessment · review, scoring &amp; training</span>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button data-tab="analyse" class="active">Analyse video</button>
+    <button data-tab="records">Records &amp; trajectory</button>
+    <button data-tab="learn">Learn</button>
+    <button data-tab="quiz">Quiz</button>
+    <button data-tab="practice">Practice clips</button>
+    <button data-tab="about">About</button>
+  </nav>
+  <div class="session-timer" id="sessionTimer" title="Manual advises a break after ~45 min of assessing">⏱ 00:00</div>
+</header>
+
+<main>
+<!-- ============ ANALYSE ============ -->
+<section id="tab-analyse" class="tab active">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>1 · Video</h2>
+        <label class="btn primary">Open video file<input type="file" id="videoInput" accept="video/*" hidden></label>
+      </div>
+      <p class="hint" id="videoHint">Video stays on this device — nothing is uploaded. Sound is muted by default because the manual recommends assessing without acoustic signals.</p>
+      <div class="video-wrap" id="videoWrap">
+        <video id="video" playsinline muted></video>
+        <canvas id="roiCanvas" class="roi-canvas"></canvas>
+        <div class="video-empty" id="videoEmpty">No video loaded</div>
+      </div>
+      <div class="controls">
+        <button id="btnPlay" title="Space">▶︎ Play</button>
+        <button id="btnBack" title=", key">⟨ frame</button>
+        <button id="btnFwd" title=". key">frame ⟩</button>
+        <button id="btnBack5" title="← key">−5 s</button>
+        <button id="btnFwd5" title="→ key">+5 s</button>
+        <label>Speed
+          <select id="speed">
+            <option value="0.25">0.25×</option><option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option><option value="1.5">1.5×</option>
+            <option value="2">2×</option><option value="4">4× (scan)</option>
+          </select>
+        </label>
+        <label class="chk"><input type="checkbox" id="mute" checked> Mute</label>
+        <span class="time" id="timeLabel">0:00.0 / 0:00.0</span>
+      </div>
+      <input type="range" id="seek" min="0" max="1000" value="0" class="seek">
+      <div class="controls">
+        <button id="btnMarkIn" title="[ key">[ Mark GM start</button>
+        <button id="btnMarkOut" title="] key">Mark GM end ]</button>
+        <button id="btnRoi" title="Drag a box around the infant">Set region (ROI)</button>
+        <button id="btnRoiClear">Clear ROI</button>
+        <label>Head at
+          <select id="headPos">
+            <option value="top">top</option><option value="bottom">bottom</option>
+            <option value="left">left</option><option value="right">right</option>
+          </select>
+        </label>
+      </div>
+      <h3>GM sequences</h3>
+      <p class="hint">Mark about three GM sequences per recording (preterm) or the best 5–10 min (writhing / fidgety period). Click a sequence to loop it.</p>
+      <ul id="seqList" class="seq-list"></ul>
+      <details class="kbd">
+        <summary>Keyboard shortcuts</summary>
+        <p><kbd>Space</kbd> play/pause · <kbd>,</kbd>/<kbd>.</kbd> frame step · <kbd>←</kbd>/<kbd>→</kbd> 5 s · <kbd>[</kbd>/<kbd>]</kbd> mark start/end · <kbd>1</kbd>–<kbd>6</kbd> speed · <kbd>L</kbd> loop selected sequence</p>
+      </details>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>2 · Motion analysis <span class="tag">exploratory</span></h2>
+        <button id="btnAnalyse" class="primary" disabled>Run analysis</button>
+      </div>
+      <div class="controls">
+        <label>Sample rate
+          <select id="sampleFps"><option>4</option><option selected>8</option><option>12</option><option>15</option></select> fps
+        </label>
+        <label>Pixel threshold <input type="number" id="pxThr" value="18" min="4" max="80" style="width:4em"></label>
+        <label>Range <select id="anRange"><option value="all">whole video</option><option value="seqs">marked sequences only</option></select></label>
+      </div>
+      <div class="progress" id="anProgress" hidden><div></div><span></span></div>
+      <canvas id="motionChart" class="chart" height="220"></canvas>
+      <div class="legend" id="chartLegend"></div>
+      <label class="slider">Activity threshold <input type="range" id="actThr" min="0" max="100" value="30"> <span id="actThrVal"></span></label>
+      <div id="metrics" class="metrics"><p class="hint">Load a video, optionally draw a region around the infant (exclude caregivers, toys, monitors), set head position, then run the analysis. Click the chart to jump to that moment.</p></div>
+      <div class="warn">
+        <strong>Not a diagnostic classifier.</strong> These pixel-change indicators describe <em>how much</em> and <em>where</em> the image changes. They cannot judge complexity, variability or fluency — GM classification remains a trained observer's visual Gestalt judgement. Use the indicators to find activity bouts, check recording suitability and support teaching.
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>3 · Assessment</h2>
+      <div>
+        <button id="btnNewAssess">New</button>
+        <button id="btnSaveAssess" class="primary">Save to records</button>
+        <button id="btnPrintAssess">Print / PDF</button>
+      </div>
+    </div>
+    <form id="assessForm" class="assess" autocomplete="off">
+      <fieldset>
+        <legend>Infant &amp; recording</legend>
+        <div class="row">
+          <label>Infant ID <input name="infantId" required placeholder="study / MRN code (avoid names)"></label>
+          <label>Date of birth <input type="date" name="dob" required></label>
+          <label>GA at birth <input type="number" name="gaW" min="22" max="43" placeholder="wk" style="width:4.5em"> + <input type="number" name="gaD" min="0" max="6" placeholder="d" style="width:3.5em"></label>
+          <label>Recording date <input type="date" name="recDate" required></label>
+          <label>Scorer initials <input name="scorer" style="width:5em"></label>
+        </div>
+        <div class="age-box" id="ageBox">Enter DOB, gestational age and recording date to calculate age and select the correct tool.</div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Recording quality checklist <span class="hint">(manual, Chapter 3)</span></legend>
+        <div class="checks" id="qualityChecks"></div>
+        <div id="qualityWarn" class="hint"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Global (Gestalt) classification</legend>
+        <p class="hint">First decide normal vs abnormal on overall impression, then the age-specific category. Do this <em>before</em> looking at detailed scores.</p>
+        <div class="radio-grid" id="globalClass"></div>
+        <div id="fmDetail" class="fm-detail" hidden>
+          <label>Fidgety temporal organisation
+            <select name="fmTemporal"><option value="">—</option><option>++ continual</option><option>+ intermittent</option><option>+/− sporadic</option></select>
+          </label>
+          <label>Distribution
+            <select name="fmDist"><option value="">—</option><option>D = P</option><option>D &gt; P</option><option>P &gt; D</option></select>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset id="gmosSet">
+        <legend>GM Optimality Score — preterm &amp; writhing GMs <span class="hint">(Ferrari et al 1990, modified; max 16, min 8)</span></legend>
+        <div id="gmosItems" class="score-items"></div>
+        <div class="total">GMOS: <strong id="gmosTotal">–</strong> / 16</div>
+      </fieldset>
+
+      <fieldset id="mosSet">
+        <legend>Motor Optimality Score — 3 to 5 months <span class="hint">(Einspieler &amp; Bos 2001; max 28, min 5)</span></legend>
+        <div class="mos-patterns">
+          <div>
+            <h4>Movement patterns observed</h4>
+            <div id="mosMove" class="na-list"></div>
+          </div>
+          <div>
+            <h4>Postural patterns observed</h4>
+            <div id="mosPost" class="na-list"></div>
+          </div>
+          <div>
+            <h4>Movement character</h4>
+            <div id="mosChar" class="na-list"></div>
+          </div>
+        </div>
+        <p class="hint">Counts of normal (N) vs abnormal (A) patterns are tallied automatically to suggest items 3 and 4; you can override.</p>
+        <div id="mosItems" class="score-items"></div>
+        <div class="total">MOS: <strong id="mosTotal">–</strong> / 28</div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Notes</legend>
+        <textarea name="notes" rows="3" placeholder="Behavioural state, interfering factors, sequences used, comparison with previous recording…"></textarea>
+        <label class="chk"><input type="checkbox" name="attachMetrics" checked> Attach motion-analysis summary to this record</label>
+      </fieldset>
+    </form>
+  </div>
+</section>
+
+<!-- ============ RECORDS ============ -->
+<section id="tab-records" class="tab">
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Records &amp; individual developmental trajectory</h2>
+      <div>
+        <button id="btnExportJson">Export JSON</button>
+        <button id="btnExportCsv">Export CSV</button>
+        <label class="btn">Import JSON<input type="file" id="importJson" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <p class="hint">Records are stored only in this browser (localStorage). Export regularly for backup. The manual recommends a trajectory rather than a single snapshot: 2–3 preterm recordings, one at term/early postterm, and at least one at 9–15 weeks postterm (repeat at ~12 and ~15 weeks if fidgety movements appear absent).</p>
+    <div class="row">
+      <label>Infant <select id="infantSelect"></select></label>
+    </div>
+    <div id="trajWrap"><svg id="trajectory" viewBox="0 0 960 330" role="img" aria-label="Developmental trajectory chart"></svg></div>
+    <div id="trajAdvice" class="hint"></div>
+    <table class="tbl" id="recTable"><thead><tr><th>Recording</th><th>Age</th><th>Class</th><th>Score</th><th>Scorer</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- ============ LEARN ============ -->
+<section id="tab-learn" class="tab">
+  <div class="learn-layout">
+    <aside class="panel toc" id="learnToc"></aside>
+    <article class="panel lesson" id="learnBody"></article>
+  </div>
+</section>
+
+<!-- ============ QUIZ ============ -->
+<section id="tab-quiz" class="tab">
+  <div class="panel quiz" id="quizPanel"></div>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<section id="tab-practice" class="tab">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-head"><h2>Practice library</h2>
+        <div>
+          <label class="chk"><input type="checkbox" id="trainerMode"> Trainer mode</label>
+        </div>
+      </div>
+      <p class="hint">Trainers add teaching clips with an expert (reference) classification. Trainees score clips blind and receive feedback. Clips are stored in this browser (IndexedDB) and never uploaded. Use only clips with appropriate consent and de-identification.</p>
+      <div id="trainerPanel" hidden>
+        <form id="clipForm" class="clip-form">
+          <label>Video file <input type="file" name="file" accept="video/*" required></label>
+          <label>Clip title <input name="title" required placeholder="e.g. Case 07 — 34 wk PMA"></label>
+          <label>Age period
+            <select name="period" required>
+              <option value="preterm">Preterm GMs</option>
+              <option value="writhing">Writhing (term – ~8 wk)</option>
+              <option value="fidgety">Fidgety (9 – 20 wk)</option>
+            </select>
+          </label>
+          <label>Reference classification <select name="key" required></select></label>
+          <label>Reference score (optional) <input type="number" name="keyScore" min="5" max="28" style="width:5em"></label>
+          <label class="wide">Teaching points <textarea name="teach" rows="2" placeholder="What should the trainee notice?"></textarea></label>
+          <button class="primary">Add clip</button>
+        </form>
+        <div class="row">
+          <button id="btnExportLib">Export answer key (JSON)</button>
+          <label class="btn">Import answer key<input type="file" id="importLib" accept=".json" hidden></label>
+          <label class="btn">Attach videos to imported keys<input type="file" id="attachVideos" accept="video/*" multiple hidden></label>
+        </div>
+      </div>
+      <ul id="clipList" class="clip-list"></ul>
+    </div>
+
+    <div class="panel" id="practiceRun">
+      <div class="panel-head"><h2 id="practiceTitle">Select a clip</h2></div>
+      <label>Trainee name <input id="traineeName" placeholder="Name / staff ID"></label>
+      <div class="video-wrap small"><video id="pVideo" playsinline muted controls></video></div>
+      <div class="controls">
+        <button id="pBack">⟨ frame</button><button id="pFwd">frame ⟩</button>
+        <label>Speed <select id="pSpeed"><option>0.5</option><option selected>1</option><option>2</option></select>×</label>
+      </div>
+      <form id="practiceForm" hidden>
+        <div class="radio-grid" id="pClass"></div>
+        <label>Your optimality score (optional) <input type="number" name="score" min="5" max="28" style="width:5em"></label>
+        <button class="primary">Submit answer</button>
+      </form>
+      <div id="practiceFeedback"></div>
+      <h3>Performance</h3>
+      <div id="practiceStats" class="metrics"></div>
+      <div class="row">
+        <button id="btnExportResults">Export results CSV</button>
+        <button id="btnClearResults" class="danger">Clear results</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="tab-about" class="tab">
+  <div class="panel prose">
+    <h2>About GMA Assist</h2>
+    <p>GMA Assist supports clinicians and trainees using <strong>Prechtl's Method on the Qualitative Assessment of General Movements</strong> (Einspieler, Prechtl, Bos, Ferrari &amp; Cioni; Mac Keith Press, 2004). It provides a video review workspace with slow-motion and frame stepping, marking of GM sequences, exploratory motion indicators, structured scoring (GM Optimality Score and the 3–5 month Motor Optimality Score), longitudinal trajectories, and training material with a quiz and a blind practice-clip library.</p>
+    <h3>Important limitations</h3>
+    <ul>
+      <li>This is a <strong>decision-support and educational tool</strong>. It does not classify general movements automatically and must not be used as a stand-alone diagnostic device.</li>
+      <li>Clinical GMA should be performed by assessors who have completed accredited training (e.g. General Movements Trust Basic and Advanced courses). This app does not confer certification.</li>
+      <li>The teaching text is an original summary for revision purposes; consult the manual and accompanying case videos for the authoritative description.</li>
+    </ul>
+    <h3>Privacy</h3>
+    <p>Everything runs in the browser. Videos, records and training results stay on the device (localStorage / IndexedDB) unless you export them. Use pseudonymous infant IDs and follow your hospital's data-protection and consent policies when storing infant videos.</p>
+    <h3>Install / offline</h3>
+    <p>Hosted on GitHub Pages, the app can be installed (“Add to Home screen” / “Install app”) and works offline after the first visit.</p>
+    <p class="hint">Version <span id="appVersion"></span></p>
+    <button id="btnWipe" class="danger">Delete all local data</button>
+  </div>
+</section>
+</main>
+
+<div id="printArea" class="print-only"></div>
+<div id="toast" class="toast"></div>
+
+<script src="js/content.js"></script>
+<script src="js/db.js"></script>
+<script src="js/motion.js"></script>
+<script src="js/app.js"></script>
+<script src="js/training.js"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
