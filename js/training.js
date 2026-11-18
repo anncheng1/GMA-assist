@@ -23,37 +23,56 @@
 /* ================= Reference video library ================= */
 function renderRefLibrary(el) {
   const user = Store.get('refVideos', []);
-  const all = [...GMA.referenceVideos.map(v => ({ ...v, builtin: true })), ...user];
+  const userImgs = Store.get('refImages', []);
+  const vids = [...GMA.referenceVideos.map(v => ({ ...v, builtin: true })), ...user.map(v => ({ kind: 'example', ...v }))];
+  const imgs = [...GMA.referenceImages.map(v => ({ ...v, builtin: true })), ...userImgs];
   const clsOpts = Object.keys(GMA.classes).map(k => `<option value="${k}">${esc(GMA.classes[k].label)}</option>`).join('');
-  el.innerHTML = `<p>Published example recordings to calibrate your Gestalt perception. Videos play from YouTube (internet needed) and are not stored in the app. Watch each one several times, at normal speed and slowed down, and compare normal with abnormal.</p>
-    <div class="ref-grid">${all.map((v, i) => {
-      const c = GMA.classes[v.cls];
-      return `<div class="ref-card"><div class="yt"><button class="play" data-yt="${esc(v.yt)}" style="background-image:url(https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg)" aria-label="Play ${esc(v.title)}">▶</button></div>
-      <div class="body"><b>${esc(v.title)}</b>${c ? `<span class="cls ${GMA.abnormal.has(v.cls) ? 'a' : 'n'}">${esc(c.label)}</span>` : ''}
+  const vcard = v => {
+    const c = GMA.classes[v.cls];
+    return `<div class="ref-card"><div class="yt"><button class="play" data-yt="${esc(v.yt)}" style="background-image:url(https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg)" aria-label="Play ${esc(v.title)}">▶</button></div>
+      <div class="body"><b>${esc(v.title)}</b>${c ? `<span class="cls ${GMA.abnormal.has(v.cls) ? 'a' : 'n'}">${esc(c.label)}</span>` : v.kind === 'example' ? '<span class="cls u">unverified</span>' : ''}
       ${v.note ? `<div>${esc(v.note)}</div>` : ''}<div class="hint">${esc(v.source || '')}</div>
       <div class="row"><a href="https://www.youtube.com/watch?v=${esc(v.yt)}" target="_blank" rel="noopener">Open on YouTube</a>
       ${v.builtin ? '' : `<button data-del="${esc(v.id)}" class="danger">Remove</button>`}</div></div></div>`;
-    }).join('')}</div>
-    <h3>Add a YouTube reference video</h3>
+  };
+  const icard = v => `<div class="ref-card"><a href="${esc(v.full || v.src)}" target="_blank" rel="noopener" class="img"><img src="${esc(v.src)}" alt="${esc(v.title)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'hint',textContent:'Image needs internet — open the link'}))"></a>
+      <div class="body"><b>${esc(v.title)}</b>${v.note ? `<div>${esc(v.note)}</div>` : ''}<div class="hint">${esc(v.credit || '')}</div>
+      ${v.builtin ? '' : `<div class="row"><button data-deli="${esc(v.id)}" class="danger">Remove</button></div>`}</div></div>`;
+  el.innerHTML = `<p>Openly published material for calibrating your Gestalt perception. Videos and images load from the publisher (internet needed) and are not stored in the app. Watch each video several times, at normal speed and slowed down, and compare normal with abnormal.</p>
+    <h3>Example videos</h3><div class="ref-grid">${vids.filter(v => v.kind !== 'explainer').map(vcard).join('')}</div>
+    <h3>Explainers &amp; lectures</h3><div class="ref-grid">${vids.filter(v => v.kind === 'explainer').map(vcard).join('')}</div>
+    <h3>Figures &amp; illustrations</h3><div class="ref-grid">${imgs.map(icard).join('')}</div>
+    <h3>Open-access reading</h3><ul class="reading">${GMA.reading.map(r => `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a><br><small class="hint">${esc(r.cite)}</small></li>`).join('')}</ul>
+    <h3>Add to the library</h3>
     <form class="ref-form" id="refForm">
-      <label>YouTube link <input name="url" required placeholder="https://www.youtube.com/watch?v=…"></label>
+      <label>Type <select name="type"><option value="video">YouTube video</option><option value="explainer">YouTube explainer / lecture</option><option value="image">Image (URL)</option></select></label>
+      <label>Link <input name="url" required placeholder="https://…"></label>
       <label>Title <input name="title" required></label>
       <label>Classification shown <select name="cls"><option value="">— not specified —</option>${clsOpts}</select></label>
-      <label>Source / citation <input name="source"></label>
+      <label>Source / citation / licence <input name="source"></label>
       <label style="grid-column:1/-1">Teaching note <input name="note"></label>
-      <button class="primary">Add video</button>
+      <button class="primary">Add</button>
     </form>
-    <p class="hint">Use only videos published openly by their owners (journals, GM Trust, hospitals). Never upload identifiable patient videos to public sites.</p>`;
+    <p class="hint">Add only material published openly by its owner (journals, GM Trust, hospitals) and respect its licence. Never upload identifiable patient videos to public sites.</p>`;
   $$('button.play', el).forEach(b => b.onclick = () => {
     b.parentElement.innerHTML = `<iframe src="${GMA.ytEmbed(b.dataset.yt, true)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Reference video"></iframe>`;
   });
   $$('[data-del]', el).forEach(b => b.onclick = () => { Store.set('refVideos', Store.get('refVideos', []).filter(v => v.id !== b.dataset.del)); renderRefLibrary(el); });
+  $$('[data-deli]', el).forEach(b => b.onclick = () => { Store.set('refImages', Store.get('refImages', []).filter(v => v.id !== b.dataset.deli)); renderRefLibrary(el); });
   $('#refForm', el).onsubmit = e => {
-    e.preventDefault(); const f = e.target;
-    const yt = GMA.ytId(f.url.value); if (!yt) return toast('Not a recognised YouTube link');
-    const list = Store.get('refVideos', []);
-    list.push({ id: uid(), yt, title: f.title.value.trim(), cls: f.cls.value, source: f.source.value.trim(), note: f.note.value.trim() });
-    Store.set('refVideos', list); toast('Reference video added'); renderRefLibrary(el);
+    e.preventDefault(); const f = e.target; const type = f.type.value;
+    if (type === 'image') {
+      if (!/^https:\/\//.test(f.url.value.trim())) return toast('Image link must start with https://');
+      const list = Store.get('refImages', []);
+      list.push({ id: uid(), src: f.url.value.trim(), title: f.title.value.trim(), credit: f.source.value.trim(), note: f.note.value.trim() });
+      Store.set('refImages', list);
+    } else {
+      const yt = GMA.ytId(f.url.value); if (!yt) return toast('Not a recognised YouTube link');
+      const list = Store.get('refVideos', []);
+      list.push({ id: uid(), yt, kind: type === 'explainer' ? 'explainer' : 'example', title: f.title.value.trim(), cls: f.cls.value, source: f.source.value.trim(), note: f.note.value.trim() });
+      Store.set('refVideos', list);
+    }
+    toast('Added to library'); renderRefLibrary(el);
   };
 }
 

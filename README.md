@@ -41,10 +41,15 @@ GMA Assist runs entirely in the web browser. It needs no installation, no server
 ### 3. Learn
 Ten modules: nine revision modules plus a reference video library. The revision modules cover why GMA, normal GMs across ages, co-existing movements at 3–5 months, abnormal GMs and their look-alikes (seizures, sepsis, drugs), recording technique, Gestalt assessment, optimality scores, trajectories, and clinical use.
 
-### Reference video library (Learn → module 10)
-- Openly published example recordings are embedded from YouTube (privacy-enhanced youtube-nocookie.com). They are not downloaded, and playing them needs internet.
-- Built in: the four JAMA Network companion videos to Ferrari et al. 2002 (*Arch Pediatr Adolesc Med* 156:460–7): normal GMs, normal fidgety movements, cramped-synchronised GMs and abnormal fidgety movements.
-- You can add more by pasting a YouTube link with its classification, source and a teaching note. These are saved on the device.
+### Reference library (Learn → module 10)
+Published material is embedded or linked; it isn't downloaded, so viewing it needs internet.
+- **Example videos:**
+  - the four JAMA Network companion videos to Ferrari et al. 2002 (normal GMs, normal fidgety movements, cramped-synchronised GMs, abnormal fidgety movements);
+  - one clinic-uploaded fidgety-movement Short, marked *unverified* until a trainer confirms it.
+- **Explainers:** a Spanish-language introduction to Prechtl's general movements.
+- **Figures (CC BY 3.0):** the revised MOS proforma and the "body symmetry" illustration, from Einspieler et al. *J Clin Med* 2019;8:1616.
+- **Open-access reading:** 10 key papers and guidelines (fidgety-movement review, GM checklist, MOS-R, sporadic fidgety movements, LMIC use, the WA NICU guideline, a parent fact sheet, and others).
+- Users can add their own YouTube videos, explainers and image links.
 
 ### 4. Quiz
 A randomised bank of 25 multiple-choice questions, each with an explanation. The app keeps your best score.

@@ -6,7 +6,7 @@
  */
 const GMA = {};
 
-GMA.version = '1.1.0';
+GMA.version = '1.2.0';
 
 /* Built-in reference videos (embedded from the publisher's YouTube channel; not downloaded). */
 GMA.referenceVideos = [
@@ -18,6 +18,45 @@ GMA.referenceVideos = [
     note: 'Rigid movements lacking smooth fluency; limb and trunk muscles contract and relax almost simultaneously. Compare directly with Video 1.' },
   { yt: 'Soi_yNVkeos', title: 'Video 4 — Abnormal fidgety movements', cls: 'AF', source: 'JAMA Network — companion video to Ferrari F et al. Cramped synchronized general movements in preterm infants as an early marker for cerebral palsy. Arch Pediatr Adolesc Med 2002;156:460–7.',
     note: 'The fidgety pattern is recognisable, but amplitude, speed and jerkiness are exaggerated. Compare directly with Video 2.' }
+];
+
+/* Additional videos: explainers and unverified examples (kind: 'explainer' | 'example'). */
+GMA.referenceVideos.forEach(v => v.kind = 'example');
+GMA.referenceVideos.push(
+  { yt: 'pXSjaQJb7qo', kind: 'example', cls: '', title: 'GMA video — fidgety movements (YouTube Short)',
+    source: 'Clinic-uploaded YouTube Short titled “General Movement Assessment Video — Fidgety Movements”. Uploader classification not formally stated.',
+    note: 'Unverified example: a GM-trained trainer should confirm the classification before using it for teaching.' },
+  { yt: 'rMDqkqqGt1Y', kind: 'explainer', cls: '', title: '¿Qué son los Movimientos Generales de Prechtl? (Spanish)',
+    source: 'Spanish-language introduction linked to GM Trust certification courses.',
+    note: 'Overview of what general movements are and why the assessment is useful.' }
+);
+
+/* Open-licence figures (hot-linked from the publisher; shown with attribution, need internet). */
+GMA.referenceImages = [
+  { src: 'https://mdpi-res.com/jcm/jcm-08-01616/article_deploy/html/images/jcm-08-01616-g002-550.jpg',
+    full: 'https://www.mdpi.com/2077-0383/8/10/1616/htm#fig_body_display_jcm-08-01616-f002',
+    title: 'Revised Motor Optimality Score (MOS-R) proforma, 3–5 months',
+    credit: 'Einspieler C, Bos AF, Krieber-Tomantschger M, et al. Cerebral Palsy: Early Markers of Clinical Phenotype and Functional Outcome. J Clin Med 2019;8:1616, Figure 2. CC BY 3.0.',
+    note: 'The consensus revision of the motor repertoire assessment. The app scores the original 2004 version (Fig. 3.9 of the manual); compare the two.' },
+  { src: 'https://mdpi-res.com/jcm/jcm-08-01616/article_deploy/html/images/jcm-08-01616-g003-550.jpg',
+    full: 'https://www.mdpi.com/2077-0383/8/10/1616/htm#fig_body_display_jcm-08-01616-f003',
+    title: 'Postural item “Body symmetry” — illustration',
+    credit: 'Einspieler C et al. J Clin Med 2019;8:1616, Figure 3. CC BY 3.0.',
+    note: 'Use this when scoring the posture item (symmetrical vs asymmetrical).' }
+];
+
+/* Open-access reading (links only). */
+GMA.reading = [
+  { title: 'Fidgety movements – tiny in appearance, but huge in impact', cite: 'Einspieler C, Peharz R, Marschik PB. J Pediatr (Rio J) 2016;92(3 Suppl 1):S64–70', url: 'https://doi.org/10.1016/j.jped.2015.12.003' },
+  { title: 'The general movement checklist: a guide to assessment of GMs during preterm and term age', cite: 'Aizawa CYP, Einspieler C, et al. J Pediatr (Rio J) 2021;97:445–52', url: 'https://doi.org/10.1016/j.jped.2020.09.006' },
+  { title: 'Cerebral palsy: early markers of clinical phenotype and functional outcome (MOS-R)', cite: 'Einspieler C, Bos AF, et al. J Clin Med 2019;8:1616', url: 'https://doi.org/10.3390/jcm8101616' },
+  { title: 'Are sporadic fidgety movements as clinically relevant as is their absence?', cite: 'Einspieler C, et al. Early Hum Dev 2015', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5951271/' },
+  { title: 'The GMA helps us to identify preterm infants at risk for cognitive dysfunction', cite: 'Einspieler C, Bos AF, Libertus ME, Marschik PB. Front Psychol 2016;7:406', url: 'https://doi.org/10.3389/fpsyg.2016.00406' },
+  { title: 'Zika-exposed infants evaluated with the general movement assessment', cite: 'Einspieler C, et al. JAMA Netw Open 2019;2:e187235', url: 'https://doi.org/10.1001/jamanetworkopen.2018.7235' },
+  { title: 'The GMA in non-European low- and middle-income countries', cite: 'Tomantschger I, et al. Rev Saude Publica 2018;52:6', url: 'https://scielosp.org/pdf/rsp/2018.v52/6/en' },
+  { title: 'Cramped synchronized GMs in preterm infants as an early marker for CP (source of Videos 1–4)', cite: 'Ferrari F, et al. Arch Pediatr Adolesc Med 2002;156:460–7', url: 'https://jamanetwork.com/journals/jamapediatrics/fullarticle/191860' },
+  { title: 'General Movement Video and Assessment Guideline (NICU)', cite: 'Child and Adolescent Health Service, Western Australia', url: 'https://cahs.health.wa.gov.au/~/media/HSPs/CAHS/Documents/Health-Professionals/Neonatology-guidelines/General-Movement-Video-and-Assessment-Guideline.pdf' },
+  { title: 'Parent fact sheet: Prechtl’s General Movements Assessment', cite: 'Cerebral Palsy Alliance, Australia', url: 'https://cerebralpalsy.org.au/wp-content/uploads/2023/06/Parental-Fact-Sheets.pdf' }
 ];
 
 GMA.ytId = function (url) {
@@ -242,7 +281,7 @@ GMA.lessons = [
 <p class="ref">Manual: Chapters 5, 6, 8, 9.</p>` }
 ];
 
-GMA.lessons.push({ id: 'refvideos', title: '10. Reference video library', html: '<div id="refLibrary"></div>' });
+GMA.lessons.push({ id: 'refvideos', title: '10. Reference library (videos, figures, reading)', html: '<div id="refLibrary"></div>' });
 
 /* ---------- Quiz bank ---------- */
 GMA.quiz = [
