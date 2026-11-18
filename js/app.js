@@ -9,7 +9,8 @@ function showTab(name) {
   $$('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + name));
   if (name === 'records') renderRecords();
   if (name === 'analyse') redrawChart();
-  location.hash = name;
+  history.replaceState(null, '', '#' + name);
+  window.scrollTo({ top: 0 });
 }
 $('#appVersion').textContent = GMA.version;
 
@@ -44,14 +45,15 @@ $('#sampleCase').onchange = e => {
   }).catch(err => toast('Could not load case (' + err.message + ') — check internet connection'));
   e.target.value = '';
 };
-$('#videoInput').addEventListener('change', e => {
+function onVideoFile(e) {
   const f = e.target.files[0]; if (!f) return;
   if (video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
   video.src = URL.createObjectURL(f);
-  state.fileName = f.name; state.seqs = []; state.analysis = null; state.metrics = null; state.roi = null;
-  $('#videoEmpty').hidden = true;
-  renderSeqs(); renderMetrics(); drawRoi();
-});
+  resetVideoState(f.name || 'Recorded video');
+  e.target.value = '';
+}
+$('#videoInput').addEventListener('change', onVideoFile);
+$('#videoCapture').addEventListener('change', onVideoFile);
 video.addEventListener('loadedmetadata', () => {
   $('#btnAnalyse').disabled = false;
   $('#videoHint').textContent = `${state.fileName} · ${video.videoWidth}×${video.videoHeight} · ${Motion.fmtT(video.duration)} — stays on this device.`;

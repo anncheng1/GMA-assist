@@ -6,7 +6,7 @@
  */
 const GMA = {};
 
-GMA.version = '1.3.0';
+GMA.version = '1.4.0';
 
 /* Built-in reference videos (embedded from the publisher's YouTube channel; not downloaded). */
 GMA.referenceVideos = [

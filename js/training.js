@@ -193,6 +193,7 @@ const Quiz = (() => {
     $('#pClass').innerHTML = keys.map(k => `<label><input type="radio" name="pc" value="${k}"> <span><b>${esc(GMA.classes[k].label)}</b><small>${esc(GMA.classes[k].desc)}</small></span></label>`).join('');
     $('#practiceForm').score.value = '';
     renderList();
+    if (window.matchMedia('(max-width:760px)').matches) $('#practiceRun').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   $('#pSpeed').onchange = e => pv.playbackRate = +e.target.value;
   $('#pBack').onclick = () => { pv.pause(); pv.currentTime = Math.max(0, pv.currentTime - 1 / 30); };

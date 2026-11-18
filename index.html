@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GMA-assist — Prechtl General Movement Assessment</title>
 <meta name="description" content="Offline video review, scoring and training tool for Prechtl's General Movement Assessment">
 <meta name="theme-color" content="#2a0a6e">
@@ -11,6 +11,9 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="GMA-assist">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -22,13 +25,13 @@
       <span class="sub">Prechtl General Movement Assessment · review, scoring &amp; training</span>
     </div>
   </div>
-  <nav class="tabs" role="tablist">
-    <button data-tab="analyse" class="active">Analyse video</button>
-    <button data-tab="records">Records &amp; trajectory</button>
-    <button data-tab="learn">Learn</button>
-    <button data-tab="quiz">Quiz</button>
-    <button data-tab="practice">Practice clips</button>
-    <button data-tab="about">About</button>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button data-tab="analyse" class="active"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h11a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zm12 4 5-3v10l-5-3"/></svg><span class="tl">Analyse video</span><span class="ts">Analyse</span></button>
+    <button data-tab="records"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-6"/></svg><span class="tl">Records &amp; trajectory</span><span class="ts">Records</span></button>
+    <button data-tab="learn"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0zM21 6c-3-1.5-6-1.5-9 0v13c3-1.5 6-1.5 9 0z"/></svg><span class="tl">Learn</span><span class="ts">Learn</span></button>
+    <button data-tab="quiz"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5"/><circle cx="12" cy="12" r="9"/></svg><span class="tl">Quiz</span><span class="ts">Quiz</span></button>
+    <button data-tab="practice"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><span class="tl">Practice clips</span><span class="ts">Practice</span></button>
+    <button data-tab="about"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span class="tl">About</span><span class="ts">About</span></button>
   </nav>
   <div class="session-timer" id="sessionTimer" title="Manual advises a break after ~45 min of assessing">⏱ 00:00</div>
 </header>
@@ -41,7 +44,8 @@
       <div class="panel-head">
         <h2>1 · Video</h2>
         <div class="row" style="margin:0"><select id="sampleCase" title="Built-in de-identified teaching cases"></select>
-        <label class="btn primary">Open video file<input type="file" id="videoInput" accept="video/*" hidden></label></div>
+        <label class="btn primary">Open video<input type="file" id="videoInput" accept="video/*" hidden></label>
+        <label class="btn" title="Record with the device camera">● Record<input type="file" id="videoCapture" accept="video/*" capture="environment" hidden></label></div>
       </div>
       <p class="hint" id="videoHint">Video stays on this device — nothing is uploaded. Sound is muted by default because the manual recommends assessing without acoustic signals.</p>
       <div class="video-wrap" id="videoWrap">
@@ -82,7 +86,7 @@
       <h3>GM sequences</h3>
       <p class="hint">Mark about three GM sequences per recording (preterm) or the best 5–10 min (writhing / fidgety period). Click a sequence to loop it.</p>
       <ul id="seqList" class="seq-list"></ul>
-      <details class="kbd">
+      <details class="kbd desktop-only">
         <summary>Keyboard shortcuts</summary>
         <p><kbd>Space</kbd> play/pause · <kbd>,</kbd>/<kbd>.</kbd> frame step · <kbd>←</kbd>/<kbd>→</kbd> 5 s · <kbd>[</kbd>/<kbd>]</kbd> mark start/end · <kbd>1</kbd>–<kbd>6</kbd> speed · <kbd>L</kbd> loop selected sequence</p>
       </details>
