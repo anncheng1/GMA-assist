@@ -1,7 +1,7 @@
 /* Offline cache for GMA Assist. Bump CACHE when files change. */
-const CACHE = 'gma-assist-v1.0.0';
+const CACHE = 'gma-assist-v1.0.1';
 const FILES = ['./', 'index.html', 'css/style.css', 'js/content.js', 'js/db.js', 'js/motion.js', 'js/app.js', 'js/training.js',
-  'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
+  'manifest.webmanifest', 'icons/logo-96.png', 'icons/logo-192.png', 'icons/logo-512.png', 'icons/favicon-64.png', 'icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));

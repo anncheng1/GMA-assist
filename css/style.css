@@ -1,6 +1,6 @@
 :root{
   --bg:#f4f6f7; --panel:#fff; --ink:#1d2a30; --muted:#5d6d74; --line:#d9e1e4;
-  --brand:#0f5c6e; --brand2:#167e93; --accent:#e07a1f; --ok:#2e7d32; --bad:#c62828; --warn-bg:#fff6e5;
+  --brand:#35208f; --brand2:#5a3ec8; --accent:#e07a1f; --ok:#2e7d32; --bad:#c62828; --warn-bg:#fff6e5;
   --radius:10px;
   --ul:#1f77b4; --ur:#d62728; --ll:#2ca02c; --lr:#9467bd;
 }
@@ -19,10 +19,11 @@ input,select,textarea{font:inherit;padding:.3rem .45rem;border:1px solid var(--l
 textarea{width:100%}
 label{display:inline-flex;align-items:center;gap:.35rem}
 .hint{color:var(--muted);font-size:.86rem;margin:.3rem 0}
-.tag{font-size:.7rem;background:#eef4f6;color:var(--brand);padding:.1rem .45rem;border-radius:20px;vertical-align:middle;font-weight:500}
+.tag{font-size:.7rem;background:#f0edfb;color:var(--brand);padding:.1rem .45rem;border-radius:20px;vertical-align:middle;font-weight:500}
 
 .topbar{position:sticky;top:0;z-index:10;background:var(--brand);color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1.2rem;padding:.55rem 1rem}
 .brand{display:flex;align-items:center;gap:.6rem}
+.brand img{border-radius:9px;background:#fff1}
 .brand .sub{display:block;font-size:.75rem;opacity:.8}
 .tabs{display:flex;flex-wrap:wrap;gap:.25rem;flex:1}
 .tabs button{background:transparent;color:#d8eef3;border:none;border-radius:6px}
@@ -52,7 +53,7 @@ main{max-width:1500px;margin:0 auto;padding:1rem}
 
 .seq-list,.clip-list{list-style:none;margin:0;padding:0}
 .seq-list li,.clip-list li{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border:1px solid var(--line);border-radius:7px;margin-bottom:.3rem;cursor:pointer}
-.seq-list li.active,.clip-list li.active{border-color:var(--brand2);background:#eef7f9}
+.seq-list li.active,.clip-list li.active{border-color:var(--brand2);background:#f0edfb}
 .seq-list li span{flex:1}
 .seq-list li button,.clip-list li button{padding:.1rem .45rem;font-size:.8rem}
 .clip-list li .meta{flex:1}
@@ -81,7 +82,7 @@ kbd{background:#eef2f3;border:1px solid var(--line);border-radius:4px;padding:0 
 
 .assess fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 .8rem;padding:.6rem .9rem}
 .assess legend{font-weight:600;padding:0 .3rem}
-.age-box{margin-top:.5rem;padding:.5rem .7rem;background:#eef7f9;border-radius:7px;font-size:.9rem}
+.age-box{margin-top:.5rem;padding:.5rem .7rem;background:#f0edfb;border-radius:7px;font-size:.9rem}
 .age-box b{color:var(--brand)}
 .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.2rem .8rem;font-size:.9rem}
 .checks label{align-items:flex-start}
@@ -89,7 +90,7 @@ kbd{background:#eef2f3;border:1px solid var(--line);border-radius:4px;padding:0 
 .radio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.4rem}
 .radio-grid label{border:1px solid var(--line);border-radius:7px;padding:.45rem .6rem;align-items:flex-start;cursor:pointer}
 .radio-grid label.dim{opacity:.45}
-.radio-grid label:has(input:checked){border-color:var(--brand);background:#eef7f9}
+.radio-grid label:has(input:checked){border-color:var(--brand);background:#f0edfb}
 .radio-grid small{display:block;color:var(--muted);font-size:.78rem}
 .fm-detail{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.6rem}
 .score-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:.6rem}
@@ -118,13 +119,13 @@ kbd{background:#eef2f3;border:1px solid var(--line);border-radius:4px;padding:0 
 .learn-layout{display:grid;grid-template-columns:260px 1fr;gap:1rem}
 @media (max-width:800px){.learn-layout{grid-template-columns:1fr}}
 .toc button{display:block;width:100%;text-align:left;border:none;border-radius:6px;margin-bottom:.15rem}
-.toc button.active{background:#eef7f9;color:var(--brand);font-weight:600}
+.toc button.active{background:#f0edfb;color:var(--brand);font-weight:600}
 .lesson{line-height:1.6}
 .lesson h2{font-size:1.3rem;margin-bottom:.6rem}
 .lesson table{border-collapse:collapse;width:100%;font-size:.9rem;margin:.6rem 0}
 .lesson th,.lesson td{border:1px solid var(--line);padding:.35rem .5rem;text-align:left;vertical-align:top}
 .lesson th{background:#f4f7f8}
-.lesson .key{background:#eef7f9;border-left:4px solid var(--brand2);padding:.5rem .8rem;border-radius:0 7px 7px 0;margin:.7rem 0}
+.lesson .key{background:#f0edfb;border-left:4px solid var(--brand2);padding:.5rem .8rem;border-radius:0 7px 7px 0;margin:.7rem 0}
 .lesson .ref{color:var(--muted);font-size:.8rem}
 .lesson-nav{display:flex;justify-content:space-between;margin-top:1.2rem}
 

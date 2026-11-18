@@ -555,7 +555,7 @@ function drawTrajectory(list) {
     const code = r.globalClass === 'FN' ? 'N' : r.globalClass;
     return { x: X(r.pma), y: Y(code), code, r };
   });
-  if (pts.length > 1) s += `<polyline fill="none" stroke="#0f5c6e" stroke-width="2" points="${pts.map(p => p.x + ',' + p.y).join(' ')}"/>`;
+  if (pts.length > 1) s += `<polyline fill="none" stroke="#35208f" stroke-width="2" points="${pts.map(p => p.x + ',' + p.y).join(' ')}"/>`;
   pts.forEach(p => {
     s += `<circle cx="${p.x}" cy="${p.y}" r="6" fill="${p.code === 'N' ? '#2e7d32' : '#c62828'}" stroke="#fff" stroke-width="2"><title>${esc(p.r.recDate)} · ${esc(GMA.classes[p.r.globalClass]?.label)}</title></circle>`;
   });

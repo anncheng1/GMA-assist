@@ -6,7 +6,7 @@
  */
 const GMA = {};
 
-GMA.version = '1.0.0';
+GMA.version = '1.0.1';
 
 /* ---------- Classification categories ---------- */
 GMA.classes = {

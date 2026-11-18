@@ -15,7 +15,7 @@ const Motion = (() => {
     right:  ['RL', 'RA', 'LL', 'LA']
   };
   const LIMBS = { RA: 'Right arm', LA: 'Left arm', RL: 'Right leg', LL: 'Left leg' };
-  const COLORS = { total: '#0f5c6e', RA: '#1f77b4', LA: '#d62728', RL: '#2ca02c', LL: '#9467bd' };
+  const COLORS = { total: '#35208f', RA: '#1f77b4', LA: '#d62728', RL: '#2ca02c', LL: '#9467bd' };
 
   function seek(video, t) {
     return new Promise((res) => {

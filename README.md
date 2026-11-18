@@ -1,4 +1,6 @@
-# GMA Assist
+<p align="center"><img src="icons/logo-512.png" alt="GMA-assist logo" width="200"></p>
+
+# GMA-assist
 
 **Offline video review, scoring and training tool for Prechtl's General Movement Assessment (GMA).**
 
