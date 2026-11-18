@@ -39,13 +39,18 @@ GMA Assist runs entirely in the web browser. It needs no installation, no server
 - Export and import records as JSON, or export them as CSV.
 
 ### 3. Learn
-Nine revision modules: why GMA, normal GMs across ages, co-existing movements at 3–5 months, abnormal GMs and their look-alikes (seizures, sepsis, drugs), recording technique, Gestalt assessment, optimality scores, trajectories, and clinical use.
+Ten modules: nine revision modules plus a reference video library. The revision modules cover why GMA, normal GMs across ages, co-existing movements at 3–5 months, abnormal GMs and their look-alikes (seizures, sepsis, drugs), recording technique, Gestalt assessment, optimality scores, trajectories, and clinical use.
+
+### Reference video library (Learn → module 10)
+- Openly published example recordings are embedded from YouTube (privacy-enhanced youtube-nocookie.com). They are not downloaded, and playing them needs internet.
+- Built in: the four JAMA Network companion videos to Ferrari et al. 2002 (*Arch Pediatr Adolesc Med* 156:460–7): normal GMs, normal fidgety movements, cramped-synchronised GMs and abnormal fidgety movements.
+- You can add more by pasting a YouTube link with its classification, source and a teaching note. These are saved on the device.
 
 ### 4. Quiz
 A randomised bank of 25 multiple-choice questions, each with an explanation. The app keeps your best score.
 
 ### 5. Practice clips (training healthcare workers)
-- **Trainer mode:** add de-identified teaching clips with a reference (expert) classification, an optional reference score and teaching points.
+- **Trainer mode:** add de-identified teaching clips (a local video file **or a YouTube link**) with a reference (expert) classification, an optional reference score and teaching points.
 - **Trainee mode:** score each clip blind, then see the reference answer and the teaching points.
 - Per-trainee statistics: exact agreement, normal-vs-abnormal agreement, **Cohen's κ**, sensitivity and specificity against the reference, and a confusion matrix. Results export to CSV.
 - Share a library across devices by exporting the **answer key (JSON)**. On the other device, import it and attach the video files; they are matched by file name.

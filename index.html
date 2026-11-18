@@ -233,7 +233,8 @@
       <p class="hint">Trainers add teaching clips with an expert (reference) classification. Trainees score clips blind and receive feedback. Clips are stored in this browser (IndexedDB) and never uploaded. Use only clips with appropriate consent and de-identification.</p>
       <div id="trainerPanel" hidden>
         <form id="clipForm" class="clip-form">
-          <label>Video file <input type="file" name="file" accept="video/*" required></label>
+          <label>Video file <input type="file" name="file" accept="video/*"></label>
+          <label>…or YouTube link <input name="yt" placeholder="https://www.youtube.com/watch?v=…"></label>
           <label>Clip title <input name="title" required placeholder="e.g. Case 07 — 34 wk PMA"></label>
           <label>Age period
             <select name="period" required>
@@ -259,7 +260,8 @@
     <div class="panel" id="practiceRun">
       <div class="panel-head"><h2 id="practiceTitle">Select a clip</h2></div>
       <label>Trainee name <input id="traineeName" placeholder="Name / staff ID"></label>
-      <div class="video-wrap small"><video id="pVideo" playsinline muted controls></video></div>
+      <div class="video-wrap small"><video id="pVideo" playsinline muted controls></video><iframe id="pYt" class="yt-frame" hidden allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Practice clip"></iframe></div>
+      <p class="hint" id="pYtHint" hidden>YouTube clip: use the ⚙ settings in the player for slow motion (0.25×). The YouTube title may be visible, so local video files are better for strictly blind testing.</p>
       <div class="controls">
         <button id="pBack">⟨ frame</button><button id="pFwd">frame ⟩</button>
         <label>Speed <select id="pSpeed"><option>0.5</option><option selected>1</option><option>2</option></select>×</label>

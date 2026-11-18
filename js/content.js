@@ -6,7 +6,28 @@
  */
 const GMA = {};
 
-GMA.version = '1.0.1';
+GMA.version = '1.1.0';
+
+/* Built-in reference videos (embedded from the publisher's YouTube channel; not downloaded). */
+GMA.referenceVideos = [
+  { yt: 'XrVZmG9KSxo', title: 'Video 1 — Normal general movements', cls: 'N', source: 'JAMA Network — companion video to Ferrari F et al. Cramped synchronized general movements in preterm infants as an early marker for cerebral palsy. Arch Pediatr Adolesc Med 2002;156:460–7.',
+    note: 'Whole-body, variable sequence of arm, leg, neck and trunk movements; waxing and waning intensity; rotations; gradual onset and offset.' },
+  { yt: '2tGAK8BKJwo', title: 'Video 2 — Normal fidgety movements', cls: 'FN', source: 'JAMA Network — companion video to Ferrari F et al. Cramped synchronized general movements in preterm infants as an early marker for cerebral palsy. Arch Pediatr Adolesc Med 2002;156:460–7.',
+    note: 'Small, moderate-speed movements of neck, trunk and limbs in all directions with variable acceleration, continual while awake and not crying.' },
+  { yt: 'LSa4jENxgLk', title: 'Video 3 — Cramped-synchronised movements', cls: 'CS', source: 'JAMA Network — companion video to Ferrari F et al. Cramped synchronized general movements in preterm infants as an early marker for cerebral palsy. Arch Pediatr Adolesc Med 2002;156:460–7.',
+    note: 'Rigid movements lacking smooth fluency; limb and trunk muscles contract and relax almost simultaneously. Compare directly with Video 1.' },
+  { yt: 'Soi_yNVkeos', title: 'Video 4 — Abnormal fidgety movements', cls: 'AF', source: 'JAMA Network — companion video to Ferrari F et al. Cramped synchronized general movements in preterm infants as an early marker for cerebral palsy. Arch Pediatr Adolesc Med 2002;156:460–7.',
+    note: 'The fidgety pattern is recognisable, but amplitude, speed and jerkiness are exaggerated. Compare directly with Video 2.' }
+];
+
+GMA.ytId = function (url) {
+  if (!url) return null;
+  const s = String(url).trim();
+  if (/^[\w-]{11}$/.test(s)) return s;
+  const m = s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/);
+  return m ? m[1] : null;
+};
+GMA.ytEmbed = (id, autoplay) => `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&playsinline=1${autoplay ? '&autoplay=1&mute=1' : ''}`;
 
 /* ---------- Classification categories ---------- */
 GMA.classes = {
@@ -220,6 +241,8 @@ GMA.lessons = [
 </ul>
 <p class="ref">Manual: Chapters 5, 6, 8, 9.</p>` }
 ];
+
+GMA.lessons.push({ id: 'refvideos', title: '10. Reference video library', html: '<div id="refLibrary"></div>' });
 
 /* ---------- Quiz bank ---------- */
 GMA.quiz = [

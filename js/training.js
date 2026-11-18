@@ -14,10 +14,48 @@
       ${i < GMA.lessons.length - 1 ? `<button class="primary" data-go="${i + 1}">${esc(GMA.lessons[i + 1].title)} →</button>` : `<button class="primary" data-quiz>Take the quiz →</button>`}</div>`;
     $$('[data-go]', body).forEach(b => b.onclick = () => { show(+b.dataset.go); body.scrollIntoView({ behavior: 'smooth' }); });
     const q = $('[data-quiz]', body); if (q) q.onclick = () => showTab('quiz');
+    if (l.id === 'refvideos') renderRefLibrary($('#refLibrary'));
   }
   $$('button', toc).forEach(b => b.onclick = () => show(+b.dataset.i));
   show(0);
 })();
+
+/* ================= Reference video library ================= */
+function renderRefLibrary(el) {
+  const user = Store.get('refVideos', []);
+  const all = [...GMA.referenceVideos.map(v => ({ ...v, builtin: true })), ...user];
+  const clsOpts = Object.keys(GMA.classes).map(k => `<option value="${k}">${esc(GMA.classes[k].label)}</option>`).join('');
+  el.innerHTML = `<p>Published example recordings to calibrate your Gestalt perception. Videos play from YouTube (internet needed) and are not stored in the app. Watch each one several times, at normal speed and slowed down, and compare normal with abnormal.</p>
+    <div class="ref-grid">${all.map((v, i) => {
+      const c = GMA.classes[v.cls];
+      return `<div class="ref-card"><div class="yt"><button class="play" data-yt="${esc(v.yt)}" style="background-image:url(https://i.ytimg.com/vi/${esc(v.yt)}/hqdefault.jpg)" aria-label="Play ${esc(v.title)}">▶</button></div>
+      <div class="body"><b>${esc(v.title)}</b>${c ? `<span class="cls ${GMA.abnormal.has(v.cls) ? 'a' : 'n'}">${esc(c.label)}</span>` : ''}
+      ${v.note ? `<div>${esc(v.note)}</div>` : ''}<div class="hint">${esc(v.source || '')}</div>
+      <div class="row"><a href="https://www.youtube.com/watch?v=${esc(v.yt)}" target="_blank" rel="noopener">Open on YouTube</a>
+      ${v.builtin ? '' : `<button data-del="${esc(v.id)}" class="danger">Remove</button>`}</div></div></div>`;
+    }).join('')}</div>
+    <h3>Add a YouTube reference video</h3>
+    <form class="ref-form" id="refForm">
+      <label>YouTube link <input name="url" required placeholder="https://www.youtube.com/watch?v=…"></label>
+      <label>Title <input name="title" required></label>
+      <label>Classification shown <select name="cls"><option value="">— not specified —</option>${clsOpts}</select></label>
+      <label>Source / citation <input name="source"></label>
+      <label style="grid-column:1/-1">Teaching note <input name="note"></label>
+      <button class="primary">Add video</button>
+    </form>
+    <p class="hint">Use only videos published openly by their owners (journals, GM Trust, hospitals). Never upload identifiable patient videos to public sites.</p>`;
+  $$('button.play', el).forEach(b => b.onclick = () => {
+    b.parentElement.innerHTML = `<iframe src="${GMA.ytEmbed(b.dataset.yt, true)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Reference video"></iframe>`;
+  });
+  $$('[data-del]', el).forEach(b => b.onclick = () => { Store.set('refVideos', Store.get('refVideos', []).filter(v => v.id !== b.dataset.del)); renderRefLibrary(el); });
+  $('#refForm', el).onsubmit = e => {
+    e.preventDefault(); const f = e.target;
+    const yt = GMA.ytId(f.url.value); if (!yt) return toast('Not a recognised YouTube link');
+    const list = Store.get('refVideos', []);
+    list.push({ id: uid(), yt, title: f.title.value.trim(), cls: f.cls.value, source: f.source.value.trim(), note: f.note.value.trim() });
+    Store.set('refVideos', list); toast('Reference video added'); renderRefLibrary(el);
+  };
+}
 
 /* ================= Quiz ================= */
 const Quiz = (() => {
@@ -82,10 +120,12 @@ const Quiz = (() => {
 
   clipForm.onsubmit = async e => {
     e.preventDefault();
-    const f = clipForm.file.files[0]; if (!f) return;
-    const clip = { id: uid(), title: clipForm.title.value.trim(), period: clipForm.period.value, key: clipForm.key.value,
+    const f = clipForm.file.files[0];
+    const yt = GMA.ytId(clipForm.yt.value);
+    if (!f && !yt) return toast(clipForm.yt.value ? 'Not a recognised YouTube link' : 'Choose a video file or paste a YouTube link');
+    const clip = { yt: f ? null : yt, id: uid(), title: clipForm.title.value.trim(), period: clipForm.period.value, key: clipForm.key.value,
       keyScore: clipForm.keyScore.value ? +clipForm.keyScore.value : null, teach: clipForm.teach.value.trim(),
-      fileName: f.name, blob: f, added: new Date().toISOString() };
+      fileName: f ? f.name : null, blob: f || null, added: new Date().toISOString() };
     try { await ClipDB.put(clip); toast('Clip added'); clipForm.reset(); keyOptions(); await load(); }
     catch (err) { toast('Could not store clip: ' + err.message); }
   };
@@ -103,7 +143,7 @@ const Quiz = (() => {
     ul.innerHTML = clips.map(c => {
       const tries = res.filter(r => r.clipId === c.id);
       return `<li data-id="${c.id}" class="${active && active.id === c.id ? 'active' : ''}"><div class="meta"><b>${esc(c.title)}</b>
-        <small>${PERIOD_LABEL[c.period]} · ${c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
+        <small>${PERIOD_LABEL[c.period]} · ${c.yt ? 'YouTube · ' : c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
         ${trainer ? '<button data-a="del" class="danger">✕</button>' : ''}</li>`;
     }).join('');
     $$('li[data-id]', ul).forEach(li => li.onclick = async ev => {
@@ -116,7 +156,14 @@ const Quiz = (() => {
     active = c;
     $('#practiceTitle').textContent = c.title;
     if (url) URL.revokeObjectURL(url);
-    if (c.blob) { url = URL.createObjectURL(c.blob); pv.src = url; } else { pv.removeAttribute('src'); toast('Video not attached for this clip'); }
+    const yf = $('#pYt');
+    pv.pause();
+    if (c.yt) { pv.removeAttribute('src'); pv.hidden = true; yf.hidden = false; yf.src = GMA.ytEmbed(c.yt); }
+    else {
+      yf.hidden = true; yf.removeAttribute('src'); pv.hidden = false;
+      if (c.blob) { url = URL.createObjectURL(c.blob); pv.src = url; } else { pv.removeAttribute('src'); toast('Video not attached for this clip'); }
+    }
+    $('#pYtHint').hidden = !c.yt; ['pBack', 'pFwd', 'pSpeed'].forEach(id => $('#' + id).disabled = !!c.yt);
     pv.playbackRate = +$('#pSpeed').value;
     $('#practiceForm').hidden = false; $('#practiceFeedback').innerHTML = '';
     const keys = PERIOD_CLASSES[c.period];
