@@ -150,9 +150,12 @@ const Quiz = (() => {
   };
 
   async function load() {
+    let localIds = new Set();
     try { clips = await ClipDB.all(); } catch (e) { clips = []; }
+    clips.forEach(c => { if (c.localFor) localIds.add(c.localFor); });
+    clips = clips.filter(c => !c.localFor);
     clips.sort((a, b) => a.added.localeCompare(b.added));
-    const builtIn = GMA.sampleCases.map(c => ({ id: c.id, builtin: true, url: c.file, title: `${c.code} — ${c.pma} wk PMA${c.pma >= 40 ? ' (' + (c.pma - 40) + ' wk post-term)' : ''}`,
+    const builtIn = GMA.sampleCases.map(c => ({ id: c.id, builtin: true, url: c.file, local: c.local, attached: !c.local || localIds.has(c.id), history: c.history || '', src: c, title: `${c.code} — ${c.pma} wk PMA${c.pma >= 40 ? ' (' + (c.pma - 40) + ' wk post-term)' : ''}`,
       period: c.period, key: c.key, keyLabel: c.label, teach: c.teach || '', keyScore: null }));
     clips = [...builtIn, ...clips];
     renderList(); renderStats();
@@ -165,7 +168,7 @@ const Quiz = (() => {
     ul.innerHTML = clips.map(c => {
       const tries = res.filter(r => r.clipId === c.id);
       return `<li data-id="${c.id}" class="${active && active.id === c.id ? 'active' : ''}"><div class="meta"><b>${esc(c.title)}</b>
-        <small>${PERIOD_LABEL[c.period]} · ${c.builtin ? 'built-in case · ' : c.yt ? 'YouTube · ' : c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
+        <small>${PERIOD_LABEL[c.period]} · ${c.builtin ? (c.local ? (c.attached ? 'local video · ' : '<span style="color:var(--bad)">attach video</span> · ') : 'built-in case · ') : c.yt ? 'YouTube · ' : c.blob ? '' : '<span style="color:var(--bad)">video missing</span> · '}${tries.length} attempt(s)${trainer ? ' · key: ' + esc(GMA.classes[c.key]?.label) + (c.keyScore ? ' (' + c.keyScore + ')' : '') : ''}</small></div>
         ${trainer && !c.builtin ? '<button data-a="del" class="danger">✕</button>' : ''}</li>`;
     }).join('');
     $$('li[data-id]', ul).forEach(li => li.onclick = async ev => {
@@ -183,12 +186,32 @@ const Quiz = (() => {
     if (c.yt) { pv.removeAttribute('src'); pv.hidden = true; yf.hidden = false; yf.src = GMA.ytEmbed(c.yt); }
     else {
       yf.hidden = true; yf.removeAttribute('src'); pv.hidden = false;
-      if (c.url) { fetch(c.url).then(r => r.blob()).then(b => { if (active !== c) return; url = URL.createObjectURL(b); pv.src = url; }).catch(() => { pv.src = c.url; }); }
+      if (c.local) {
+        getCaseBlob(c.src).then(b => {
+          if (active !== c) return;
+          if (b) { url = URL.createObjectURL(b); pv.src = url; }
+          else { pv.removeAttribute('src'); }
+        });
+      }
+      else if (c.url) { fetch(c.url).then(r => r.blob()).then(b => { if (active !== c) return; url = URL.createObjectURL(b); pv.src = url; }).catch(() => { pv.src = c.url; }); }
       else if (c.blob) { url = URL.createObjectURL(c.blob); pv.src = url; } else { pv.removeAttribute('src'); toast('Video not attached for this clip'); }
     }
     $('#pYtHint').hidden = !c.yt; ['pBack', 'pFwd', 'pSpeed'].forEach(id => $('#' + id).disabled = !!c.yt);
     pv.playbackRate = +$('#pSpeed').value;
     $('#practiceForm').hidden = false; $('#practiceFeedback').innerHTML = '';
+    $('#practiceHistory').innerHTML = c.history ? `<b>History:</b> ${esc(c.history)}` : '';
+    $('#practiceHistory').hidden = !c.history;
+    const att = $('#caseAttach');
+    att.hidden = !(c.local && !c.attached);
+    if (c.local && !c.attached) {
+      att.innerHTML = `<b>${esc(c.title)}</b> is built in, but its video is not published because the infant is identifiable. Attach the video file (<code>${esc(c.src.localName)}</code>, supplied by the trainer) once on this device. It will be stored only here.
+        <label class="btn primary" style="margin-top:.4rem">Attach video<input type="file" accept="video/*" hidden></label>`;
+      $('input', att).onchange = async ev => {
+        const f = ev.target.files[0]; if (!f) return;
+        await attachCaseVideo(c.src, f); toast('Video attached on this device'); await load();
+        open(clips.find(x => x.id === c.id));
+      };
+    }
     const keys = PERIOD_CLASSES[c.period];
     $('#pClass').innerHTML = keys.map(k => `<label><input type="radio" name="pc" value="${k}"> <span><b>${esc(GMA.classes[k].label)}</b><small>${esc(GMA.classes[k].desc)}</small></span></label>`).join('');
     $('#practiceForm').score.value = '';

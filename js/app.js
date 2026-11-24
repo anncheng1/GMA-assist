@@ -36,11 +36,13 @@ $('#sampleCase').innerHTML = '<option value="">Load a teaching case…</option>'
 $('#sampleCase').onchange = e => {
   const c = GMA.sampleCases.find(x => x.id === e.target.value); if (!c) return;
   toast('Loading ' + c.code + '…');
-  fetch(c.file).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); }).then(b => {
+  getCaseBlob(c).then(b => {
+    if (!b) { toast(c.code + ': attach its video first in Practice clips'); return; }
     if (video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
     video.src = URL.createObjectURL(b); // blob URL: frame-accurate seeking on any host, offline after first load
     resetVideoState(c.code + ' (teaching case, ' + c.pma + ' wk PMA)');
     $('#headPos').value = c.head || 'top';
+    if (c.local) { toast(c.code + ' loaded. Handheld recording, so motion indicators are not valid for this clip'); return; }
     video.addEventListener('loadeddata', () => autoRegion(true).then(() => toast(c.code + ' loaded with auto region — reference answer is in Practice clips')), { once: true });
   }).catch(err => toast('Could not load case (' + err.message + ') — check internet connection'));
   e.target.value = '';

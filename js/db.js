@@ -35,6 +35,7 @@ const ClipDB = (() => {
   }
   return {
     all: () => tx('readonly', s => s.getAll()),
+    get: (id) => tx('readonly', s => s.get(id)),
     put: (c) => tx('readwrite', s => s.put(c)),
     del: (id) => tx('readwrite', s => s.delete(id)),
     clear: () => tx('readwrite', s => s.clear())
@@ -67,3 +68,13 @@ function toast(msg) {
 }
 
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+/* Built-in cases whose video is kept on the device only (not published). */
+async function getCaseBlob(c) {
+  if (c.file) { const r = await fetch(c.file); if (!r.ok) throw new Error(r.status); return r.blob(); }
+  const rec = await ClipDB.get('local-' + c.id);
+  return rec && rec.blob ? rec.blob : null;
+}
+async function attachCaseVideo(c, file) {
+  await ClipDB.put({ id: 'local-' + c.id, localFor: c.id, blob: file, fileName: file.name, added: new Date().toISOString() });
+}
