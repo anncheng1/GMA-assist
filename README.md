@@ -67,7 +67,7 @@ A randomised bank of 25 multiple-choice questions, each with an explanation. The
 
   | F | 51 wk (11 wk post-term) | fidgety | provisional abnormal (ex-28 wk twin, Gram-negative sepsis), awaiting GM-certified confirmation |
 
-  **Case F's video is not published**, because the infant is identifiable. Each device attaches it once, under **Practice clips → Case F → Attach video**, and it is stored only on that device. The trainer supplies the file `case-f-51wk.mp4`.
+  Case F is from Hospital Miri NICU. The face is blurred, and it is published with parental consent for teaching. Its reference answer is provisional until a GM-certified assessor confirms it.
 
   The reference gives only normal vs abnormal, so these cases are graded at that level. The same cases can be loaded in **Analyse video → Load a teaching case** for motion analysis and scoring practice.
 - **Trainer mode:** add de-identified teaching clips (a local video file **or a YouTube link**) with a reference (expert) classification, an optional reference score and teaching points.

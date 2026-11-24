@@ -6,7 +6,7 @@
  */
 const GMA = {};
 
-GMA.version = '1.5.0';
+GMA.version = '1.5.1';
 
 /* Built-in reference videos (embedded from the publisher's YouTube channel; not downloaded). */
 GMA.referenceVideos = [
@@ -71,11 +71,10 @@ GMA.sampleCases = [
   { id: 'case-e', code: 'Case E', file: 'cases/gma-normal-at-57-weeks.mp4', pma: 57, period: 'fidgety', key: 'NORMAL', label: 'Normal GMs at 57 weeks (17 wk post-term)',
     teach: 'Fidgety period: note the fidgety movements and the co-existing age-adequate repertoire.' }
 ];
-/* Local-video case: metadata is built in, but the identifiable video is NOT published.
- * Each device attaches the video once (Practice clips → Case F → Attach video); it is kept in IndexedDB. */
+/* Case F: Hospital Miri case, face blurred, published with parental consent for teaching. */
 GMA.sampleCases.push({
-  id: 'case-f', code: 'Case F', file: null, local: true, localName: 'case-f-51wk.mp4', pma: 51, period: 'fidgety', key: 'ABNORMAL',
-  history: 'Ex-28 week twin; history of Gram-negative sepsis. Recorded at 51 wk PMA (11 wk corrected) on nasal respiratory support with pulse oximeter. Handheld phone recording, 3 min.',
+  id: 'case-f', code: 'Case F', file: 'cases/gma-abnormal-at-51-weeks-case-f.mp4', pma: 51, period: 'fidgety', key: 'ABNORMAL',
+  history: 'Ex-28 week twin; history of Gram-negative sepsis. Recorded at 51 wk PMA (11 wk corrected) on nasal respiratory support with pulse oximeter. Handheld phone recording, 3 min; face blurred.',
   label: 'Provisional: abnormal — awaiting confirmation by a GM-certified assessor (draft report: absent vs sporadic fidgety)',
   teach: 'Draft report (accuracy-checked): (1) Consistent findings visible in the video — head mostly turned to the right from ~1:05 onward with the right arm extended alongside the body (ATNR-like posture); repeated left hand-to-left face/ear contact (0:28–0:34, 1:11–1:40, 2:25–2:53); legs mostly flexed-abducted with fewer, less varied movements than the arms. ' +
          '(2) Not supported or overstated — the camera is handheld: it rotates and zooms (e.g. 0:26–0:29, 1:04–1:59, 2:16–2:19, 2:54–2:59), so the reported “log-rolling trunk tilts” may be camera artefact, and the motion-analysis indicators are invalid for this clip. Age-adequate patterns were missed: hands-to-midline / hand-hand contact (0:10–0:13, 0:22–0:24) and hand-mouth contact. Swiping and spontaneous ATNR can be normal at 11 weeks; they are abnormal only if predominant or obligatory. ' +
